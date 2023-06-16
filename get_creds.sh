@@ -8,8 +8,8 @@ PROFILE_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey == "ProfileArn") | 
 ROLE_ARN=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey == "RoleArn") | .OutputValue')
 
 CREDS=$(aws_signing_helper credential-process \
-  --certificate ./server.pem \
-  --private-key ./server.key \
+  --certificate ./client.pem \
+  --private-key ./client.key \
   --trust-anchor-arn ${TRUST_ANCHOR_ARN} \
   --profile-arn ${PROFILE_ARN} \
   --role-arn ${ROLE_ARN})
