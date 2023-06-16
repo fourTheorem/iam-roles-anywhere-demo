@@ -1,0 +1,10 @@
+*.pem
+*.crt
+*.key
+*.csr
+*.req
+*.crl
+*.srl
+index
+index.*
+serial.*

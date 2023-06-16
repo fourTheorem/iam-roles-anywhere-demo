@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Template definine IAM Roles Anywhere sample resources to experiment with IAM credentials outside AWS. This is an example for learning purposes.
+
+Parameters:
+  X509CertificateData:
+    Type: String
+    Description: The root CA PEM data
+  OU:
+    Type: String
+    Description: Organization Unit for certificate subjects
+
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: rolesanywhere.amazonaws.com
+          Action:
+            - sts:AssumeRole
+            - sts:TagSession
+            - sts:SetSourceIdentity
+          Condition:
+            StringEquals:
+              "aws:PrincipalTag/x509Subject/OU": !Ref OU
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSQSReadOnlyAccess 
+      RoleName: demo-roles-anywhere-role
+
+  Profile:
+    Type: AWS::RolesAnywhere::Profile
+    Properties: 
+      DurationSeconds: 3600
+      Enabled: true
+      Name: demo-roles-anywhere-profile
+      RoleArns: 
+        - !GetAtt Role.Arn
+
+  TrustAnchor:
+    Type: AWS::RolesAnywhere::TrustAnchor
+    Properties: 
+      Enabled: true
+      Name: demo-trust-anchor
+      Source: 
+        SourceType: CERTIFICATE_BUNDLE
+        SourceData:
+          X509CertificateData: !Ref X509CertificateData
+
+Outputs:
+  TrustAnchorArn:
+    Value: !GetAtt TrustAnchor.TrustAnchorArn
+  ProfileArn:
+    Value: !GetAtt Profile.ProfileArn
+  RoleArn:
+    Value: !GetAtt Role.Arn
